@@ -86,7 +86,7 @@ class Settings(BaseSettings):
     youtube_channel_handle: str = ""
     libsyn_feed_url: str = ""
     podcast_title_prefix: str | None = None
-    media_sync_enabled: bool = True
+    media_sync_enabled: bool = False
     profile_sync_enabled: bool = True
 
 

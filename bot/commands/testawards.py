@@ -15,7 +15,7 @@ from discord.ext import commands
 
 from bot import emojis
 from bot.commands.preview_season_awards import (
-    MSG_COUNTED,
+    msg_counted,
     PROGRESS_INTERVAL_SECONDS,
     AwardsData,
     AwardWinner,
@@ -169,7 +169,7 @@ async def setup(bot: commands.Bot) -> None:
             scan = await ctx.send(view=build_awards_view(fixture, scanned_pct=0))
             await _play_counting(scan, fixture)
             ceremony = await ctx.send(view=build_awards_view(fixture, reveal=0))
-            counted = MSG_COUNTED.format(
+            counted = msg_counted(
                 posts=FIXTURE_POSTS, url=ceremony.jump_url, tap=emojis.get("manat"),
             )
             await scan.edit(view=build_notice_view(counted))

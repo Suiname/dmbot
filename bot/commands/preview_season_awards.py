@@ -65,7 +65,7 @@ SUSPENSE_FINAL = "Final Verdict…"
 MSG_NO_CHANNELS = "No channels with “preview-season” in the name were found in this server."
 MSG_NO_POSTS = "No image posts found between {start} and {end}, so there is nothing to award."
 MSG_NO_REACTIONS = "Found {count} image posts but no reactions to score."
-def _msg_counted(posts: int, url: str, tap: str) -> str:
+def msg_counted(posts: int, url: str, tap: str) -> str:
     if settings.preview_season_channel_id and settings.production_guild_id:
         channel_ref = f"https://discord.com/channels/{settings.production_guild_id}/{settings.preview_season_channel_id}"
     else:
@@ -285,7 +285,7 @@ class PreviewSeasonAwards(commands.Cog):
             return
 
         ceremony = await interaction.channel.send(view=build_awards_view(data, reveal=0))
-        counted = _msg_counted(len(posts), ceremony.jump_url, emojis.get("manat"))
+        counted = msg_counted(len(posts), ceremony.jump_url, emojis.get("manat"))
         await interaction.edit_original_response(view=build_notice_view(counted))
         audit.event(
             "preview_season_awards_posted",
