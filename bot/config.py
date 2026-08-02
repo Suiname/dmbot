@@ -30,6 +30,7 @@ class Settings(BaseSettings):
         return self
     discord_botlog_channel_id: int | None = None
     feedback_channel_id: int = 1504825374188507156
+    preview_season_channel_id: int | None = None
     public_site_url: str = "https://limitedlevelups.com"
     auto_refresh_enabled: bool = True
 
