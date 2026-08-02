@@ -28,20 +28,20 @@ The primary target is **pod draft automation** — the Draftmancer integration, 
 
 ---
 
-## Phase 1 — Configuration (no branding changes yet)
+## ✅ Phase 1 — Configuration (no branding changes yet)
 
 Get the bot running on a new server by filling in `.env`. No code changes, just setup.
 
-- [ ] Fork upstream, clone locally, create `generalize` branch ✓
-- [ ] Create a Discord application at discord.com/developers
-- [ ] Get a bot token and invite the bot to the test server
-- [ ] Copy `.env.example` → `.env` and fill in all required fields
-- [ ] Run Postgres locally via Docker (`dischord-pg` container, port 5433)
-- [ ] Run `alembic upgrade head` to apply the schema
-- [ ] Run `python -m bot.scripts.seed_sets` to populate set data
-- [ ] Start the bot with `python -u -m bot.main`
-- [ ] Run `!sync` in the test server to push slash commands
-- [ ] Smoke test: confirm `/help` and `/pod-draft` commands appear
+- [x] Fork upstream, clone locally, create `generalize` branch
+- [x] Create a Discord application at discord.com/developers
+- [x] Get a bot token and invite the bot to the test server
+- [x] Copy `.env.example` → `.env` and fill in all required fields
+- [x] Run Postgres locally via Docker (`dmbot-pg` container, port 5433, using Podman Desktop)
+- [x] Run `alembic upgrade head` to apply the schema
+- [x] Run `python -m bot.scripts.seed_sets` to populate set data
+- [x] Start the bot with `python -u -m bot.main`
+- [x] Run `!sync` in the test server to push slash commands
+- [x] Smoke test: confirmed `/help` appears and bot is posting to bot-log channel
 
 **`.env` fields to fill in for a fresh server:**
 
@@ -73,7 +73,7 @@ PUBLIC_SITE_URL=<leave blank or point to a placeholder>
 
 ---
 
-## Phase 2 — Move `PRODUCTION_GUILD_ID` into config
+## ✅ Phase 2 — Move `PRODUCTION_GUILD_ID` into config
 
 **Why this matters:** `PRODUCTION_GUILD_ID` is a module-level constant set to the LLU server's ID. It is used in two places with real behavior impact:
 
@@ -83,24 +83,25 @@ PUBLIC_SITE_URL=<leave blank or point to a placeholder>
 Until this is moved into config, the bot will silently behave as if it is not on the production server (because your guild ID won't match the hardcoded LLU ID). This is mostly harmless during development but wrong in production.
 
 **Tasks:**
-- [ ] Add `production_guild_id: int | None = None` to `Settings` in `bot/config.py`, defaulting to `discord_guild_id`
-- [ ] Remove `PRODUCTION_GUILD_ID = 775371722065051658` constant from `bot/config.py`
-- [ ] Update all import sites to use `settings.production_guild_id` instead:
+- [x] Add `production_guild_id: int | None = None` to `Settings` in `bot/config.py`, defaulting to `discord_guild_id` via `model_validator`
+- [x] Remove `PRODUCTION_GUILD_ID = 775371722065051658` constant from `bot/config.py`
+- [x] Update all import sites to use `settings.production_guild_id` instead:
   - `bot/commands/test_group.py`
   - `bot/commands/preview_season_awards.py`
   - `bot/services/pod_launch.py`
-  - `bot/tests/test_test_group_guard.py` (update fixture value)
-  - `bot/tests/test_pod_rally.py` (update `GUILD_ID` fixture)
+  - `bot/tests/test_test_group_guard.py` (monkeypatch settings; use neutral fixture ID)
+  - `bot/tests/test_pod_rally.py` (replace LLU guild ID fixture with generic value)
 
 ---
 
-## Phase 3 — Move remaining hardcoded IDs into config
+## ✅ Phase 3 — Move remaining hardcoded IDs into config
 
 One channel ID is still hardcoded outside of `Settings`:
 
-- [ ] `bot/commands/preview_season_awards.py:68` — `PREVIEW_SEASON_CHANNEL_ID = 775822803328040961`
-  - Add `preview_season_channel_id: int | None = None` to `Settings`
-  - The `PREVIEW_SEASON_CHANNEL_URL` built from it is only used in a status message; if the setting is None, omit the URL from the message
+- [x] `bot/commands/preview_season_awards.py` — `PREVIEW_SEASON_CHANNEL_ID = 775822803328040961`
+  - Added `preview_season_channel_id: int | None = None` to `Settings`
+  - Removed module-level constant; URL is now built at call time in `_msg_counted()`
+  - Falls back to plain "preview-season" text when the setting is not configured
 
 Note: `COMMUNITY_TZ = ZoneInfo("America/New_York")` in the same file is also hardcoded. Low-priority since it only affects the preview-season-awards command, but worth moving to config if that command will be used.
 
