@@ -33,7 +33,8 @@ class Settings(BaseSettings):
     preview_season_channel_id: int | None = None
     community_name: str = "this server"
     public_site_url: str = ""
-    auto_refresh_enabled: bool = True
+    auto_refresh_enabled: bool = False
+    leaderboard_enabled: bool = False
 
     @property
     def leaderboard_url(self) -> str:
@@ -87,7 +88,7 @@ class Settings(BaseSettings):
     libsyn_feed_url: str = ""
     podcast_title_prefix: str | None = None
     media_sync_enabled: bool = False
-    profile_sync_enabled: bool = True
+    profile_sync_enabled: bool = False
 
 
 def _int_csv(raw: str) -> tuple[int, ...]:

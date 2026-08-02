@@ -214,7 +214,8 @@ def build_bot(guild_id: int) -> commands.Bot:
         init_reminder(bot)
         init_underfill(bot)
         init_format_schedule(bot)
-        init_set_awards_schedule(bot)
+        if settings.leaderboard_enabled:
+            init_set_awards_schedule(bot)
         init_championship_schedule(bot)
         init_p0p1_reminder(bot)
         init_launch(bot)
@@ -223,19 +224,25 @@ def build_bot(guild_id: int) -> commands.Bot:
 
         # Load cogs into memory and mirror to the guild tree so dispatch works.
         # Discord-side sync is handled by the owner-only `!sync` text command, not on startup.
-        await setup_signup(bot)
-        await setup_signout(bot)
-        await setup_delete_account(bot)
-        await setup_leaderboard(bot)
-        await setup_stats(bot)
-        await setup_trophy(bot)
+        if settings.leaderboard_enabled:
+            await setup_signup(bot)
+            await setup_signout(bot)
+            await setup_delete_account(bot)
+            await setup_leaderboard(bot)
+            await setup_stats(bot)
+            await setup_trophy(bot)
+            await setup_advertise(bot)
+            await setup_event_scribe(bot)
+            await setup_link_17lands(bot)
+            await setup_leaderboard_visibility(bot)
+            await setup_peasant(bot)
+            await setup_preview_season_awards(bot)
+            await setup_set_awards(bot)
+            await setup_auto_link_listener(bot)
+            await setup_profile_sync_listener(bot)
         await setup_save_resource(bot)
         await setup_guide(bot)
-        await setup_advertise(bot)
         await setup_help(bot)
-        await setup_event_scribe(bot)
-        await setup_link_17lands(bot)
-        await setup_leaderboard_visibility(bot)
         await setup_pod_draft(bot)
         await setup_pod_queue(bot)
         await setup_pod_guide(bot)
@@ -245,26 +252,22 @@ def build_bot(guild_id: int) -> commands.Bot:
         await setup_roles(bot)
         await setup_mock_draft(bot)
         await setup_pod_table(bot)
-        await setup_peasant(bot)
-        await setup_preview_season_awards(bot)
-        await setup_set_awards(bot)
         await setup_pod_screenshots(bot)
         await setup_rotate_image(bot)
-        await setup_auto_link_listener(bot)
-        await setup_profile_sync_listener(bot)
         await setup_test_group(bot)
         await setup_testlobby(bot)
         await setup_testcomponent(bot)
         await setup_testads(bot)
-        await setup_testp0p1reminder(bot)
-        await setup_testawards(bot)
+        if settings.leaderboard_enabled:
+            await setup_testp0p1reminder(bot)
+            await setup_testawards(bot)
+            await setup_testchampionship(bot)
+            await setup_testchampcard(bot)
+            await setup_testscribe(bot)
         await setup_testschedule(bot)
         await setup_testthreadintro(bot)
         await setup_testpolls(bot)
-        await setup_testscribe(bot)
         await setup_testformatschedule(bot)
-        await setup_testchampionship(bot)
-        await setup_testchampcard(bot)
         await setup_testmockcard(bot)
         register_pod_views(bot)
         bot.add_dynamic_items(TeamReportButton)
@@ -287,9 +290,8 @@ def build_bot(guild_id: int) -> commands.Bot:
         _log_startup_summary()
         bot.tree.copy_global_to(guild=guild)
 
-        # Register the persistent leaderboard view so Join buttons on previously-posted
-        # messages keep dispatching after a bot restart
-        bot.add_view(LeaderboardView())
+        if settings.leaderboard_enabled:
+            bot.add_view(LeaderboardView())
         bot.add_view(LobbyReadyButtonView(show_force_start=True))
         bot.add_view(RolesView())
         bot.add_view(persistent_pod_card_view())
@@ -668,7 +670,10 @@ def _log_startup_summary() -> None:
     with SessionLocal() as session:
         active_set = resolve_active_set(session)
         player_count = session.execute(select(func.count()).select_from(Player)).scalar()
-        lb_count = session.execute(select(func.count()).select_from(LeaderboardMessage)).scalar()
+        lb_count = (
+            session.execute(select(func.count()).select_from(LeaderboardMessage)).scalar()
+            if settings.leaderboard_enabled else None
+        )
         upcoming = session.execute(
             select(PodDraftEvent)
             .where(PodDraftEvent.socket_status.in_(["pending", "open", "drafting", "in_progress"]))
@@ -677,7 +682,6 @@ def _log_startup_summary() -> None:
 
     set_code = active_set.code if active_set else active_set_code()
     header = f"{set_code} | {player_count} Players"
-    lb_line = f"{lb_count} Leaderboard Messages"
     if upcoming:
         pod_lines = [
             f"{ev.name:<28}  {ev.event_time.strftime('%Y-%m-%d %H:%M UTC')}  (in {_fmt_eta(ev.event_time - now)})"
@@ -687,7 +691,8 @@ def _log_startup_summary() -> None:
         pod_lines = ["No Upcoming Pod Drafts"]
 
     log.info(header)
-    log.info(lb_line)
+    if lb_count is not None:
+        log.info(f"{lb_count} Leaderboard Messages")
     for line in pod_lines:
         log.info(line)
 
