@@ -44,10 +44,8 @@ class GuideContent:
 
 GUIDE_PAGES: tuple[GuidePage, ...] = (
     GuidePage("channel-overview", "channel-overview"),
-    GuidePage("quick-links", "quick-links"),
     GuidePage("rules", "rules"),
-    GuidePage("limitedlevelups-com", "limitedlevelups-com"),
-    GuidePage("dischord-bot", "limitedlevelups-com"),
+    GuidePage("dischord-bot", "bot-guide"),
 )
 OVERVIEW_PAGE = GUIDE_PAGES[0]
 

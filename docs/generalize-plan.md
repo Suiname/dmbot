@@ -107,45 +107,48 @@ Note: `COMMUNITY_TZ = ZoneInfo("America/New_York")` in the same file is also har
 
 ---
 
-## Phase 4 — Community branding
+## ✅ Phase 4 — Community branding
 
 Replace LLU-specific strings in user-facing copy with a configurable community name and URL. The cleanest approach is a single `community_name` setting (e.g. "My Server") and `public_site_url` (already in config).
 
-**Add to `Settings`:**
+**Added to `Settings`:**
 ```python
 community_name: str = "this server"
+podcast_title_prefix: str | None = None
 ```
 
-**Files with LLU copy to update:**
+**Files updated:**
 
-| File | What to change |
+| File | What changed |
 |---|---|
-| `bot/commands/signup.py:39` | "Welcome to the LLU Community Leaderboard!" |
-| `bot/commands/delete_account.py:25,28` | "LLU leaderboard" (×2) |
-| `bot/commands/guide.py:41` | `WEBHOOK_NAME = "LLU Server Guide"` |
-| `bot/commands/save_resource.py:30` | `WEBHOOK_NAME = "LLU Resources"` |
-| `bot/main.py:588` | Activity name `"limitedlevelups.com \| /join"` |
-| `bot/services/mtgscribe.py:37` | User-Agent header |
-| `bot/services/token_link_flow.py:35` | `LEADERBOARD_URL` hardcoded to limitedlevelups.com |
-| `bot/services/championship_copy.py:57,107` | limitedlevelups.com URLs |
-| `bot/commands/set_awards.py:52,53` | limitedlevelups.com URLs |
-| `bot/listeners/auto_link_listener.py:40` | limitedlevelups.com URL |
-| `bot/commands/testads.py:23` | Hardcoded discord.com/channels URL using LLU guild ID |
-| `bot/services/media_sync.py:418` | Regex stripping "llu" and "limited level-ups" from titles |
+| `bot/commands/signup.py` | "Welcome to the LLU Community Leaderboard!" → `{community}` placeholder |
+| `bot/commands/delete_account.py` | "LLU leaderboard" → `{community}` placeholder (×2) |
+| `bot/commands/guide.py` | `WEBHOOK_NAME = "LLU Server Guide"` → uses `settings.community_name` |
+| `bot/commands/save_resource.py` | `WEBHOOK_NAME = "LLU Resources"` → uses `settings.community_name` |
+| `bot/main.py` | Activity name now uses `settings.community_name` |
+| `bot/services/mtgscribe.py` | User-Agent header uses `settings.community_name` and `settings.public_site_url` |
+| `bot/services/token_link_flow.py` | `LEADERBOARD_URL` uses `settings.leaderboard_url` |
+| `bot/listeners/auto_link_listener.py` | Leaderboard URL uses `settings.leaderboard_url` |
+| `bot/commands/testads.py` | Hardcoded discord.com/channels URL now uses `settings.production_guild_id` |
+| `bot/services/media_sync.py` | Podcast title stripping now uses `settings.podcast_title_prefix` |
 
 **`llu` emoji references** — The `llu` emoji is used as a brand icon in ~15 places via `emojis.get("llu")` / `emojis.prefix("llu")`. These already degrade gracefully to empty string when the emoji is not uploaded. To use a custom icon: upload an app emoji named `llu` to your Discord application (or rename the references to a new name and upload under that name).
 
 ---
 
-## Phase 5 — Server guide content
+## ✅ Phase 5 — Server guide content
 
-The five markdown files in `bot/server_guide/` are LLU-specific and need to be rewritten for the new community:
+Rewrote server guide to focus on pod drafts only. Removed LLU-specific pages; kept `rules.md` as a customizable template.
 
-- [ ] `bot/server_guide/channel-overview.md` — channel directory
-- [ ] `bot/server_guide/quick-links.md` — community links
-- [ ] `bot/server_guide/rules.md` — server rules
-- [ ] `bot/server_guide/limitedlevelups-com.md` — LLU website description (repurpose or remove)
-- [ ] `bot/server_guide/dischord-bot.md` — bot intro (update community name and URLs)
+**Changes:**
+- `GUIDE_PAGES` reduced from 5 to 3 entries: `channel-overview`, `rules`, `dischord-bot`
+- `bot/server_guide/channel-overview.md` — rewritten to list pod draft channels only
+- `bot/server_guide/dischord-bot.md` — rewritten to remove leaderboard; documents pod draft commands
+- `bot/server_guide/quick-links.md` — deleted (LLU-specific)
+- `bot/server_guide/limitedlevelups-com.md` — deleted (LLU-specific)
+- `bot/server_guide/rules.md` — kept as-is (customize for your server)
+
+**You will need to create** a `#bot-guide` channel on your Discord server for the `!guide` command to post the bot page into.
 
 The guide system itself (`!guide` command) is generic and needs no code changes — just new content.
 
