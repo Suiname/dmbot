@@ -18,7 +18,7 @@ from bot.services.pod_rally import (
 )
 
 
-GUILD_ID = "775371722065051658"
+GUILD_ID = "123456789"
 
 
 @dataclass
