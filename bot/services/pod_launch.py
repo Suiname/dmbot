@@ -26,7 +26,7 @@ from discord.ext import commands
 from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.orm import Session
 
-from bot.config import PRODUCTION_GUILD_ID, settings
+from bot.config import settings
 from bot.database import SessionLocal
 from bot.models import Player, PodDraftEvent, PodDraftMatch, PodDraftParticipant, PodSignal, PodSignalMember
 from bot.services import pod_format_interest as fi
@@ -1040,7 +1040,7 @@ def reset_ondemand_signals_sync(guild_id: str) -> PodResetResult:
     The event delete is global (pods carry no guild), so this refuses outright unless it is scoped to a
     known non-production guild: an empty guild or the production guild is a hard no-op, guarding against
     ever wiping real pods from the prod deployment."""
-    if not guild_id or guild_id == str(PRODUCTION_GUILD_ID):
+    if not guild_id or guild_id == str(settings.production_guild_id):
         return PodResetResult()
     today = datetime.now(SCHEDULE_TZ).date()
     with SessionLocal() as session:

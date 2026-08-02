@@ -15,7 +15,7 @@ from typing import Awaitable, Callable
 
 from discord.ext import commands
 
-from bot.config import PRODUCTION_GUILD_ID
+from bot.config import settings
 
 
 HALL_OF_FAME = (
@@ -66,7 +66,7 @@ async def refused_on_production(ctx: commands.Context, name: str) -> bool:
     allowlist is opt-in: a test surface added later is refused there until it is listed.
 
     Also called with a state word by the testlobby fallback, whose live states seed real pods."""
-    if ctx.guild is None or ctx.guild.id != PRODUCTION_GUILD_ID or name in PRODUCTION_SAFE_TESTS:
+    if ctx.guild is None or settings.production_guild_id is None or ctx.guild.id != settings.production_guild_id or name in PRODUCTION_SAFE_TESTS:
         return False
     await ctx.send(MSG_TEST_PRODUCTION_BLOCKED.format(name=name))
     return True
