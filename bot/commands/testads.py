@@ -20,7 +20,7 @@ from bot.services.ping_roles import (
 from bot.services.pod_roles import find_role
 from bot.services.pod_schedule import SCHEDULE_TZ
 
-CARD_URL = "https://discord.com/channels/775371722065051658/000/000"
+CARD_URL = f"https://discord.com/channels/{settings.production_guild_id}/000/000"
 
 
 async def setup(bot: commands.Bot) -> None:

@@ -21,13 +21,14 @@ from discord import app_commands, ui
 from discord.ext import commands
 
 from bot import audit
+from bot.config import settings
 from bot.services import bot_log
 
 logger = logging.getLogger(__name__)
 
 RESOURCE_CHANNEL_MATCH = "-resources"
 SAVED_MARKER = "📚"
-WEBHOOK_NAME = "LLU Resources"
+WEBHOOK_NAME = f"{settings.community_name} Resources"
 WEBHOOK_USERNAME_LIMIT = 80
 THREAD_NAME_LIMIT = 100
 MESSAGE_CONTENT_LIMIT = 2000

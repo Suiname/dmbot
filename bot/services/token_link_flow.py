@@ -14,6 +14,7 @@ from discord.ext import commands
 
 from bot import audit
 from bot import emojis
+from bot.config import settings
 from bot.commands import token_messages as tmsg
 from bot.commands.messages import MSG_JOINED_LEADERBOARD
 from bot.database import SessionLocal
@@ -32,7 +33,7 @@ logger = logging.getLogger(__name__)
 DM_TIMEOUT_S = 10 * 60
 PROMPT_TIMEOUT_S = 10 * 60
 
-LEADERBOARD_URL = "https://limitedlevelups.com/leaderboard"
+LEADERBOARD_URL = settings.leaderboard_url
 
 INSTRUCTIONS = (
     "**Link your 17lands profile** to track your games.\n"
