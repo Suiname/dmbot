@@ -38,7 +38,7 @@ log = logging.getLogger(__name__)
 
 GUIDE_COLOR = discord.Color.green()
 HISTORY_SCAN_LIMIT = 20
-WEBHOOK_NAME = "LLU Server Guide"
+WEBHOOK_NAME = f"{settings.community_name} Server Guide"
 WEBHOOK_USERNAME_LIMIT = 80
 WEBHOOK_FALLBACK_NOTE = " (posted as the bot, grant Manage Webhooks to post as the server owner)"
 

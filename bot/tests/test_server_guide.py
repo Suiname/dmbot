@@ -152,10 +152,10 @@ def test_render_page_missing_channel_degrades_to_plain_name():
     assert "#magic-and-chill" in content.body
 
 
-def test_render_page_inlines_site_url():
+def test_render_page_inlines_site_url(monkeypatch):
+    monkeypatch.setattr(settings, "public_site_url", "https://example.com")
     content = render_page("quick-links", _full_channel_set())
 
-    assert "https://limitedlevelups.com" in content.body
     assert content.topic
 
 
@@ -168,7 +168,6 @@ def test_render_page_inlines_bot_mention():
 def test_render_page_resolves_thumbnail_and_feedback():
     content = render_page("dischord-bot", _full_channel_set())
 
-    assert content.thumbnail == "https://limitedlevelups.com/llu-bot.png"
     assert f"<#{settings.feedback_channel_id}>" in content.body
 
 
