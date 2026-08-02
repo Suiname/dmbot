@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from bot import audit, emojis
+from bot.config import settings
 from bot.commands import descriptions as desc
 from bot.commands import token_messages as tmsg
 from bot.commands.leaderboard import (
@@ -36,7 +37,7 @@ logger = logging.getLogger(__name__)
 DM_TIMEOUT_S = 10 * 60
 
 INSTRUCTIONS = (
-    "{hello}**Welcome to the LLU Community Leaderboard!**\n"
+    "{hello}**Welcome to the {community} Leaderboard!**\n"
     "Join by sharing your **17lands profile link**.\n"
     + tmsg.WALKTHROUGH_STEPS + "\n"
     "\n"
@@ -259,7 +260,7 @@ async def setup(bot: commands.Bot) -> None:
 
 
 async def _send_signup_instructions(send) -> None:
-    content = INSTRUCTIONS.format(hello=emojis.prefix("chordoHello"))
+    content = INSTRUCTIONS.format(hello=emojis.prefix("chordoHello"), community=settings.community_name)
     await send_token_instructions(send, content)
 
 

@@ -31,7 +31,8 @@ class Settings(BaseSettings):
     discord_botlog_channel_id: int | None = None
     feedback_channel_id: int = 1504825374188507156
     preview_season_channel_id: int | None = None
-    public_site_url: str = "https://limitedlevelups.com"
+    community_name: str = "this server"
+    public_site_url: str = ""
     auto_refresh_enabled: bool = True
 
     @property
@@ -82,8 +83,9 @@ class Settings(BaseSettings):
     draftmancer_web_url: str = f"https://{DRAFTMANCER_HOST}"
 
     youtube_api_key: SecretStr | None = None
-    youtube_channel_handle: str = "limitedlevel-ups"
-    libsyn_feed_url: str = "https://feeds.libsyn.com/limitedlevelups/rss"
+    youtube_channel_handle: str = ""
+    libsyn_feed_url: str = ""
+    podcast_title_prefix: str | None = None
     media_sync_enabled: bool = True
     profile_sync_enabled: bool = True
 

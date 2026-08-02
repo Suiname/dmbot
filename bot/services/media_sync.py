@@ -415,7 +415,10 @@ def _episode_number(title: str) -> int | None:
 
 
 def _clean_title(title: str) -> str:
-    cleaned = re.sub(r"^(?:llu|limited level-?ups)\s*#?\s*\d+\s*[:\-–]\s*", "", title, flags=re.I).strip()
+    prefix = settings.podcast_title_prefix
+    if not prefix:
+        return title
+    cleaned = re.sub(rf"^(?:{prefix})\s*#?\s*\d+\s*[:\-–]\s*", "", title, flags=re.I).strip()
     return cleaned or title
 
 

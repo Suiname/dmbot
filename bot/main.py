@@ -588,7 +588,7 @@ def build_bot(guild_id: int) -> commands.Bot:
         log.info(f"logged in as {bot.user} (id={bot.user.id if bot.user else '?'})")
         await bot.change_presence(activity=discord.Activity(
             type=discord.ActivityType.competing,
-            name="limitedlevelups.com | /join",
+            name=f"{settings.community_name} | /join",
         ))
         if not bot.startup_announced:
             bot.startup_announced = True
