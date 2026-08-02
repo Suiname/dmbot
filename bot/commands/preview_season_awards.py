@@ -65,12 +65,13 @@ SUSPENSE_FINAL = "Final Verdict…"
 MSG_NO_CHANNELS = "No channels with “preview-season” in the name were found in this server."
 MSG_NO_POSTS = "No image posts found between {start} and {end}, so there is nothing to award."
 MSG_NO_REACTIONS = "Found {count} image posts but no reactions to score."
-PREVIEW_SEASON_CHANNEL_ID = 775822803328040961
-
 def _msg_counted(posts: int, url: str, tap: str) -> str:
-    channel_url = f"https://discord.com/channels/{settings.production_guild_id}/{PREVIEW_SEASON_CHANNEL_ID}"
+    if settings.preview_season_channel_id and settings.production_guild_id:
+        channel_ref = f"https://discord.com/channels/{settings.production_guild_id}/{settings.preview_season_channel_id}"
+    else:
+        channel_ref = "preview-season"
     return (
-        f"🧮 **{posts}** {channel_url} posts accounted for! "
+        f"🧮 **{posts}** {channel_ref} posts accounted for! "
         f"[**Check the Awards**]({url}) {tap}"
     )
 
