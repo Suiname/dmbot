@@ -154,20 +154,33 @@ The guide system itself (`!guide` command) is generic and needs no code changes 
 
 ---
 
-## Phase 6 — Disable out-of-scope features
+## ✅ Phase 6 — Disable out-of-scope features
 
-Rather than deleting the 17lands/leaderboard code (which would make pulling upstream changes harder), disable the features via config or by commenting out their setup calls in `bot/main.py`. This keeps the option to re-enable them later.
+Rather than deleting the 17lands/leaderboard code (which would make pulling upstream changes harder), all features are gated behind config flags. Set `LEADERBOARD_ENABLED=true` in `.env` to re-enable the full LLU feature set.
 
-Features to disable in `bot/main.py` (comment out setup calls):
-- `setup_signup` / `setup_signout` — 17lands profile linking
+**Config flags added/changed:**
+
+| Setting | Default | Controls |
+|---|---|---|
+| `leaderboard_enabled` | `False` | All 17lands/leaderboard commands, listeners, set awards, test commands for those features |
+| `auto_refresh_enabled` | `False` (was `True`) | Periodic 17lands data refresh tick |
+| `profile_sync_enabled` | `False` (was `True`) | Weekly Discord profile sync tick |
+| `media_sync_enabled` | `False` (was `True`, fixed in bug-fix commit) | Podcast/YouTube media sync tasks |
+
+**What `leaderboard_enabled` gates in `setup_hook`:**
+- `setup_signup`, `setup_signout`, `setup_delete_account` — 17lands account management
+- `setup_leaderboard`, `setup_leaderboard_visibility`, `setup_stats` — leaderboard commands
+- `setup_trophy` — trophy logging (17lands-linked)
+- `setup_advertise` — LLU championship/P0P1 event posts
+- `setup_event_scribe` — 17lands event log
 - `setup_link_17lands` — 17lands token linking
-- `setup_leaderboard` / `setup_leaderboard_visibility` — leaderboard commands
-- `setup_stats` — player stats
-- `setup_set_awards` — set awards ceremony
-- `setup_preview_season_awards` — preview season awards (or keep if wanted)
-- `setup_event_scribe` — only relevant if using the 17lands event log
-- Media sync tasks (`media_sync_enabled: bool = False` in config — already supported)
-- Profile sync listener (`profile_sync_enabled: bool = False` in config — already supported)
+- `setup_peasant` — cube commands (LLU-specific)
+- `setup_preview_season_awards`, `setup_set_awards` — LLU award ceremonies
+- `setup_auto_link_listener`, `setup_profile_sync_listener` — 17lands listeners
+- `setup_testawards`, `setup_testchampionship`, `setup_testchampcard`, `setup_testscribe` — test commands for the above
+- `init_set_awards_schedule` — scheduled set awards task
+- `LeaderboardView` persistent view registration
+- `lb_count` line in startup log summary
 
 ---
 
