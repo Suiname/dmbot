@@ -17,7 +17,7 @@ import discord
 from sqlalchemy import text
 from sqlalchemy.exc import ProgrammingError
 
-from bot.config import PRODUCTION_GUILD_ID
+from bot.config import settings
 from bot.database import SessionLocal
 from bot.services.ping_roles import REMINDER_COLOR, REMINDER_ROLE_NAME
 
@@ -101,7 +101,7 @@ async def ping_non_voters(
 
     outcome = ReminderOutcome(
         targeted=len(discord_ids), pinged=pinged, absent=len(discord_ids) - len(members),
-        source=non_voters.source, restricted=guild.id != PRODUCTION_GUILD_ID,
+        source=non_voters.source, restricted=guild.id != settings.production_guild_id,
     )
     log.info(f"p0p1-reminder: {set_code} pinged {outcome.pinged}/{outcome.targeted} from {outcome.source}, "
              f"{outcome.absent} not in guild")
@@ -115,7 +115,7 @@ def audience(
     """Off the production guild the ping reaches only whoever asked for it, and nobody at all when the
     scheduled tick fires. A test server holds real people who never signed up for a P0P1 nudge, and its
     audience comes from the dev fallback anyway, so a full sweep there pings the wrong crowd."""
-    if guild.id == PRODUCTION_GUILD_ID:
+    if guild.id == settings.production_guild_id:
         return discord_ids
     if restrict_to is None:
         log.info(f"p0p1-reminder: {guild.name} is not the production guild, pinging nobody")

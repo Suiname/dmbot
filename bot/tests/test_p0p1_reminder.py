@@ -5,8 +5,10 @@ import pytest
 
 from bot.services.p0p1_contest import Contest
 from bot.services.p0p1_copy import reminder, reminder_view
-from bot.config import PRODUCTION_GUILD_ID
+from bot.config import settings
 from bot.services.p0p1_reminder import SOURCE_PLAYERS, audience, non_voter_discord_ids_sync
+
+_PROD_ID = 111111111
 from bot.services.ping_roles import P0P1_COLOR
 from bot.tasks.p0p1_reminder_post import REMINDER_LEAD, contest_due
 
@@ -136,21 +138,24 @@ class FakeMember:
 EVERYONE = ["1", "2", "3"]
 
 
-def test_the_production_guild_pings_the_whole_non_voter_list():
-    targeted = audience(FakeGuild(PRODUCTION_GUILD_ID), EVERYONE, FakeMember(42))
+def test_the_production_guild_pings_the_whole_non_voter_list(monkeypatch):
+    monkeypatch.setattr(settings, "production_guild_id", _PROD_ID)
+    targeted = audience(FakeGuild(_PROD_ID), EVERYONE, FakeMember(42))
 
     assert targeted == EVERYONE
 
 
-def test_any_other_guild_pings_only_whoever_asked():
-    targeted = audience(FakeGuild(PRODUCTION_GUILD_ID + 1), EVERYONE, FakeMember(42))
+def test_any_other_guild_pings_only_whoever_asked(monkeypatch):
+    monkeypatch.setattr(settings, "production_guild_id", _PROD_ID)
+    targeted = audience(FakeGuild(_PROD_ID + 1), EVERYONE, FakeMember(42))
 
     assert targeted == ["42"]
 
 
-def test_the_scheduled_tick_pings_nobody_outside_the_production_guild():
+def test_the_scheduled_tick_pings_nobody_outside_the_production_guild(monkeypatch):
     """No invoker means the hourly tick, which must never sweep a test server full of real people."""
-    targeted = audience(FakeGuild(PRODUCTION_GUILD_ID + 1), EVERYONE, None)
+    monkeypatch.setattr(settings, "production_guild_id", _PROD_ID)
+    targeted = audience(FakeGuild(_PROD_ID + 1), EVERYONE, None)
 
     assert targeted == []
 
