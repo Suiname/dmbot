@@ -63,7 +63,7 @@ PUBLIC_SITE_URL=<leave blank or point to a placeholder>
 ```
 
 **Required Discord channels/roles to create on the test server** (matching your config values):
-- A pod coordination forum channel (the `POD_DRAFT_CHANNEL_ID` target)
+- A pod coordination **text** channel (the `POD_DRAFT_CHANNEL_ID` target) — not a Forum channel; the bot posts and edits the launcher board with `channel.send()`/`.fetch_message()`, which only text channels support
 - A text channel matching `POD_DRAFT_CHAT_CHANNEL_NAME`
 - A text channel matching `POD_DRAFT_TROPHY_HYPE_CHANNEL_NAME`
 - A voice channel matching `POD_DRAFT_VOICE_CHANNEL_NAME`
