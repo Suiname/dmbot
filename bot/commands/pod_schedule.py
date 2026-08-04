@@ -23,7 +23,7 @@ from discord.ext import commands
 
 from bot import audit
 from bot.commands import descriptions as desc
-from bot.config import PRODUCTION_GUILD_ID, settings
+from bot.config import settings
 from bot.discord_helpers import EM_SPACE, posts_publicly
 from bot.services import championship
 from bot.services import pod_format_interest as fi
@@ -100,7 +100,7 @@ def coordination_url(guild: discord.Guild | None) -> str:
     """The heading links to the channel the pods actually run in, which is the one route out of the schedule
     that survives a pin preview: those render the embed but drop any button under it. A DM carries no guild
     of its own, so it lands on the production server."""
-    guild_id = guild.id if guild is not None else PRODUCTION_GUILD_ID
+    guild_id = guild.id if guild is not None else settings.production_guild_id
     return CHANNEL_URL.format(guild_id=guild_id, channel_id=settings.pod_draft_channel_id)
 
 
