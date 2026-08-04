@@ -4,11 +4,13 @@ import pytest
 
 from bot.commands.save_resource import (
     THREAD_NAME_LIMIT,
+    WEBHOOK_NAME,
     default_thread_name,
     editable_body_from_starter,
     merge_texts,
     split_content,
 )
+from bot.config import settings
 
 
 def _at(minute: int) -> datetime:
@@ -87,3 +89,8 @@ def test_merge_texts_drops_blank_entries(entries, expected):
 ])
 def test_editable_body_from_starter_strips_attribution(starter, expected):
     assert editable_body_from_starter(starter) == expected
+
+
+def test_webhook_name_carries_the_configured_community_name():
+    assert WEBHOOK_NAME == f"{settings.community_name} Resources"
+    assert "LLU" not in WEBHOOK_NAME
