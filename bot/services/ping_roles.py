@@ -365,7 +365,7 @@ class _LinkArenaButton(discord.ui.Button):
         super().__init__(
             label="Link Arena",
             style=discord.ButtonStyle.primary,
-            emoji=emojis.get("mtga"),
+            emoji=emojis.get("mtga") or None,
             custom_id=LINK_ARENA_BUTTON_ID,
         )
 
