@@ -180,10 +180,14 @@ def init_daily_poll(bot: commands.Bot) -> None:
     log.info(f"scheduled daily pod launcher at {POST_HOUR_ET:02d}:00 ET")
 
 
-def _poll_channel(bot: commands.Bot) -> "discord.abc.Messageable | None":
+def _poll_channel(bot: commands.Bot) -> "discord.TextChannel | None":
     """The launcher lives in the coordination channel, not pod-draft-chat, so a busy chat can't bury it.
     Every post resolves through here, and so does a re-render whose board records no channel of its own."""
-    return bot.get_channel(settings.pod_draft_channel_id)
+    channel = bot.get_channel(settings.pod_draft_channel_id)
+    if not isinstance(channel, discord.TextChannel):
+        log.warning(f"pod_draft_channel_id {settings.pod_draft_channel_id} is not a text channel")
+        return None
+    return channel
 
 
 async def fire_daily_poll() -> None:
