@@ -1,10 +1,13 @@
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
+from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 import discord
 import pytest
 
 from bot.commands.pod_queue import _when_clock, _when_options
+from bot.config import settings
 from bot.services.pod_format_select import WRITE_IN_VALUE
 from bot.services import pod_launch
 from bot.services.pod_launch import LauncherSlot, _lazy_status
@@ -26,6 +29,7 @@ from bot.tasks.pod_daily_poll import (
     _column_value,
     _committed_card_link,
     _early_transition_is_live,
+    _poll_channel,
     build_reminder_view,
     lane_settled_for_day,
 )
@@ -328,3 +332,19 @@ def test_a_board_leave_never_reaches_a_championship_seat(monkeypatch):
 
     assert [slot.thread_id for slot in held] == ["111"]
     assert BOARD_LEAVE_ID not in [child.custom_id for child in view.children]
+
+
+def test_poll_channel_rejects_a_channel_that_cannot_send_messages(monkeypatch):
+    """A Forum channel (or any non-text channel) has no `.send()`. `POD_DRAFT_CHANNEL_ID` pointed at one
+    of these on 2026-08-03 and crashed the daily launcher instead of failing gracefully."""
+    monkeypatch.setattr(settings, "pod_draft_channel_id", 999)
+    forum_channel = SimpleNamespace(id=999)
+
+    assert _poll_channel(SimpleNamespace(get_channel=lambda cid: forum_channel)) is None
+
+
+def test_poll_channel_resolves_a_configured_text_channel(monkeypatch):
+    monkeypatch.setattr(settings, "pod_draft_channel_id", 999)
+    text_channel = MagicMock(spec=discord.TextChannel)
+
+    assert _poll_channel(SimpleNamespace(get_channel=lambda cid: text_channel)) is text_channel

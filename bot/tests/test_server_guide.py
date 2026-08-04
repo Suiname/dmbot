@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 import pytest
 
 from bot import emojis
+from bot.commands import guide
 from bot.config import settings
 from bot.services.format_schedule import (
     FORMAT_ARCHIVE_CATEGORY,
@@ -229,3 +230,11 @@ def test_page_bodies_fit_one_embed(page):
     content = parse_page(page.name)
 
     assert len(content.body) < 4000
+
+
+def test_guide_webhook_name_carries_the_configured_community_name():
+    """Phase 4 of the generalize plan replaced the hardcoded 'LLU Server Guide' webhook name with one
+    built from settings.community_name — a regression here silently reposts the guide under the wrong
+    identity."""
+    assert guide.WEBHOOK_NAME == f"{settings.community_name} Server Guide"
+    assert "LLU" not in guide.WEBHOOK_NAME

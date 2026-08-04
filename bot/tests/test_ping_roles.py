@@ -1,10 +1,12 @@
 import asyncio
 from datetime import datetime
 from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 import discord
 import pytest
 
+from bot import emojis
 from bot.services.ping_roles import (
     EARLY_POD_ROLE_NAME,
     MANAGED_ROLES,
@@ -17,6 +19,7 @@ from bot.services.ping_roles import (
     WEEKEND_LATE_POD_ROLE_NAME,
     _ensure_managed_role,
     _first_welcome_for,
+    _LinkArenaButton,
     auto_grant_spec_for_event,
     blurb_with_time,
     button_custom_id,
@@ -149,6 +152,23 @@ def test_mock_draft_join_carries_the_umbrella(monkeypatch, declined, held, expec
     asyncio.run(grant_mock_draft_role(member))
 
     assert [role.name for role in member.roles] == expected
+
+
+def test_link_arena_button_has_no_emoji_when_the_app_emoji_is_not_uploaded(monkeypatch):
+    """`emojis.get()` returns `""` for an app emoji this Discord application never uploaded, and Discord
+    rejects a Button constructed with an empty-string emoji ("Invalid emoji"). This crashed every join
+    confirmation card on a fresh fork until the button fell back to `None` instead."""
+    monkeypatch.setattr(emojis, "_EMOJIS", {})
+
+    assert _LinkArenaButton().emoji is None
+
+
+def test_link_arena_button_shows_the_emoji_once_it_is_uploaded(monkeypatch):
+    uploaded = MagicMock()
+    uploaded.__str__.return_value = "<:mtga:1466076574372724819>"
+    monkeypatch.setattr(emojis, "_EMOJIS", {"mtga": uploaded})
+
+    assert _LinkArenaButton().emoji.name == "mtga"
 
 
 def test_every_ping_role_carries_a_distinct_key():
