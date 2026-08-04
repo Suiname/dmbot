@@ -1,7 +1,10 @@
 from datetime import date, datetime, timezone
+from types import SimpleNamespace
 
 import pytest
 
+from bot.commands.pod_schedule import coordination_url
+from bot.config import settings
 from bot.services.pod_reminder_copy import RECRUITING_SECOND_TABLE
 from bot.services.pod_schedule import (
     SCHEDULE_TZ,
@@ -109,3 +112,17 @@ def test_recruiting_message_calls_out_a_second_table_only_once_yes_plus_maybe_re
 )
 def test_short_event_name_strips_trailing_date(name, expected):
     assert short_event_name(name) == expected
+
+
+def test_coordination_url_uses_the_actual_guild_when_one_is_given():
+    guild = SimpleNamespace(id=42)
+
+    assert f"/42/" in coordination_url(guild)
+
+
+def test_coordination_url_falls_back_to_production_guild_from_a_dm(monkeypatch):
+    """A DM carries no guild, so the schedule embed's title link (posted by a DM-triggered task) has to
+    fall back to the configured production guild instead of crashing on `guild.id`."""
+    monkeypatch.setattr(settings, "production_guild_id", 987654321)
+
+    assert f"/987654321/" in coordination_url(None)
