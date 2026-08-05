@@ -94,7 +94,7 @@ class Settings(BaseSettings):
     def is_production(self) -> bool:
         """Whether this process is the community bot. The test bot runs the same code against its own guild,
         so behavior that belongs to one of them keys off the guild it is actually in."""
-        return self.discord_guild_id == PRODUCTION_GUILD_ID
+        return self.discord_guild_id == self.production_guild_id
 
 
 def _int_csv(raw: str) -> tuple[int, ...]:
