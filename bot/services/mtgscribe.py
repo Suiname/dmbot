@@ -29,6 +29,8 @@ from pathlib import Path
 
 import requests
 
+from bot.config import settings
+
 logger = logging.getLogger(__name__)
 
 EVENTS_URL = "https://mtgscribe.com/wp-json/tribe/events/v1/events"
