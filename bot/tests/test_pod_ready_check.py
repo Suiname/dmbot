@@ -2,7 +2,6 @@ import asyncio
 
 import discord
 
-from bot.config import PRODUCTION_GUILD_ID
 from bot.services import pod_draft_manager
 from bot.services.lobby_embed import ready_check_confirm_text, ready_status_banner, roster_hold_detail
 from bot.services.pod_draft_manager import PodDraftManager
@@ -479,7 +478,8 @@ def test_bots_pad_the_bench_table_and_never_a_community_pod(monkeypatch):
     mgr, _ = _ready_manager([str(i) for i in range(3)])
     mgr.max_players = 8
 
-    monkeypatch.setattr(pod_draft_manager.settings, "discord_guild_id", PRODUCTION_GUILD_ID)
+    monkeypatch.setattr(pod_draft_manager.settings, "production_guild_id", 775371722065051658)
+    monkeypatch.setattr(pod_draft_manager.settings, "discord_guild_id", 775371722065051658)
     assert mgr._desired_bot_count() == 0
 
     monkeypatch.setattr(pod_draft_manager.settings, "discord_guild_id", 999)
