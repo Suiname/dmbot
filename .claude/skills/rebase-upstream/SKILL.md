@@ -12,7 +12,10 @@ Upstream still contains the original LLU-specific hardcodes this fork moved into
 same files. This skill catches that before it becomes a prod incident.
 
 Never push. Never skip failing tests to "just get it green." Never amend/force anything on
-`master` other than the rebase itself.
+`master` other than the rebase itself. If you need to inspect the backup branch's contents
+for comparison (e.g. to tell whether a failure predates the rebase), use `git worktree add
+<path> backup/...` in a scratch directory — never `git checkout <backup-branch> -- .`, which
+silently overwrites the working tree while HEAD stays on `master`.
 
 ## Workflow
 
@@ -154,9 +157,15 @@ docker ps --filter name=dmbot-pg --format "{{.Names}}"
 Start it if not running: `docker start dmbot-pg`.
 
 ```
-.venv/bin/alembic check
+DATABASE_URL=postgresql://postgres:devpw@localhost:5433/dmbot .venv/bin/alembic check
 TEST_DATABASE_URL=postgresql://postgres:devpw@localhost:5433/dmbot_test .venv/bin/pytest bot/tests/
 ```
+
+**Always pass `DATABASE_URL` explicitly for `alembic check`.** `.env`'s `DATABASE_URL` points
+at the live production Supabase database — running the bare command silently checks drift
+against prod instead of local dev. It's a read-only check either way, but the result is
+meaningless (prod has migrations/history local dev doesn't) and it's not something to touch
+outside this one explicit, deliberate override.
 
 `alembic check` catches model/migration drift from any new upstream migrations. If it
 fails, resolve the drift (new migration needed, or a hand-merged migration conflict from
