@@ -158,7 +158,6 @@ Start it if not running: `docker start dmbot-pg`.
 
 ```
 DATABASE_URL=postgresql://postgres:devpw@localhost:5433/dmbot .venv/bin/alembic check
-TEST_DATABASE_URL=postgresql://postgres:devpw@localhost:5433/dmbot_test .venv/bin/pytest bot/tests/
 ```
 
 **Always pass `DATABASE_URL` explicitly for `alembic check`.** `.env`'s `DATABASE_URL` points
@@ -170,6 +169,53 @@ outside this one explicit, deliberate override.
 `alembic check` catches model/migration drift from any new upstream migrations. If it
 fails, resolve the drift (new migration needed, or a hand-merged migration conflict from
 step 4) before touching tests.
+
+**Before running pytest, check the `dmbot_test` schema matches the current models.**
+`bot/tests/conftest.py` builds the test schema with `Base.metadata.create_all(engine)`,
+which only creates tables that don't exist yet — it never adds a column a rebased model
+picked up, so a rebase that changes `bot/models.py` (new column, new table) leaves a stale
+`dmbot_test` schema that fails every test touching the changed table with
+`UndefinedColumn`, not a real regression. `alembic check` above doesn't cover this: the test
+db isn't stamped with alembic revisions at all, only raw `create_all`.
+
+```
+TEST_DATABASE_URL=postgresql://postgres:devpw@localhost:5433/dmbot_test .venv/bin/python - <<'EOF'
+import os
+from sqlalchemy import create_engine, inspect
+from bot.models import Base
+
+engine = create_engine(os.environ["TEST_DATABASE_URL"])
+inspector = inspect(engine)
+existing_tables = set(inspector.get_table_names())
+stale = []
+for table in Base.metadata.sorted_tables:
+    if table.name not in existing_tables:
+        stale.append(f"{table.name} (missing table)")
+        continue
+    existing_cols = {c["name"] for c in inspector.get_columns(table.name)}
+    expected_cols = {c.name for c in table.columns}
+    missing = expected_cols - existing_cols
+    if missing:
+        stale.append(f"{table.name} (missing columns: {', '.join(sorted(missing))})")
+print("STALE" if stale else "OK")
+for line in stale:
+    print(f"  {line}")
+EOF
+```
+
+If it prints `OK`, move on. If it prints `STALE`, reset the schema so `create_all` rebuilds
+it from scratch on the next test run — this database is disposable (every test truncates it
+anyway), so dropping and recreating it is always safe:
+
+```
+docker exec dmbot-pg psql -U postgres -d dmbot_test -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
+```
+
+Then run the suite:
+
+```
+TEST_DATABASE_URL=postgresql://postgres:devpw@localhost:5433/dmbot_test .venv/bin/pytest bot/tests/
+```
 
 ### 8. Fix failures until green
 
