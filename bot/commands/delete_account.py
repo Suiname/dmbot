@@ -11,6 +11,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from bot import audit
+from bot.config import settings
 from bot.commands import descriptions as desc
 from bot.commands.messages import MSG_NOT_ON_BOARD
 from bot.database import SessionLocal
@@ -22,10 +23,10 @@ logger = logging.getLogger(__name__)
 CONFIRM_TIMEOUT_S = 5 * 60
 
 MSG_CONFIRM = (
-    "⚠️ This will delete all your tracked stats and remove you from the LLU leaderboard. "
+    "⚠️ This will delete all your tracked stats and remove you from the {community} leaderboard. "
     "Your 17lands data is unaffected."
 )
-MSG_DELETED = "You've been removed from the LLU leaderboard. Run `/join` anytime to come back."
+MSG_DELETED = "You've been removed from the {community} leaderboard. Run `/join` anytime to come back."
 MSG_CANCELLED = "Deletion canceled."
 
 
@@ -83,7 +84,7 @@ class ConfirmExileView(discord.ui.View):
                 f"🚪 **{interaction.user.display_name}** exiled from the leaderboard"
             )
         await interaction.response.edit_message(
-            content=MSG_DELETED if result.kind == "deleted" else MSG_NOT_ON_BOARD, view=None,
+            content=MSG_DELETED.format(community=settings.community_name) if result.kind == "deleted" else MSG_NOT_ON_BOARD, view=None,
         )
         self.stop()
 
@@ -120,7 +121,7 @@ class DeleteAccount(commands.Cog):
             return
 
         await interaction.followup.send(
-            MSG_CONFIRM, view=ConfirmExileView(self.bot, user_id), ephemeral=ephemeral,
+            MSG_CONFIRM.format(community=settings.community_name), view=ConfirmExileView(self.bot, user_id), ephemeral=ephemeral,
         )
 
 

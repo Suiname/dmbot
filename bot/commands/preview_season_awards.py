@@ -27,7 +27,7 @@ from discord.ext import commands
 from bot import audit, emojis
 from bot.commands import descriptions as desc
 from bot.commands.messages import MSG_ADMIN_ONLY
-from bot.config import PRODUCTION_GUILD_ID
+from bot.config import settings
 from bot.discord_helpers import NBSP, ZWSP, first_image_url
 from bot.sets import PREVIEW_WINDOWS, PreviewWindow
 
@@ -65,12 +65,15 @@ SUSPENSE_FINAL = "Final Verdict…"
 MSG_NO_CHANNELS = "No channels with “preview-season” in the name were found in this server."
 MSG_NO_POSTS = "No image posts found between {start} and {end}, so there is nothing to award."
 MSG_NO_REACTIONS = "Found {count} image posts but no reactions to score."
-PREVIEW_SEASON_CHANNEL_ID = 775822803328040961
-PREVIEW_SEASON_CHANNEL_URL = f"https://discord.com/channels/{PRODUCTION_GUILD_ID}/{PREVIEW_SEASON_CHANNEL_ID}"
-MSG_COUNTED = (
-    f"🧮 **{{posts}}** {PREVIEW_SEASON_CHANNEL_URL} posts accounted for! "
-    "[**Check the Awards**]({url}) {tap}"
-)
+def msg_counted(posts: int, url: str, tap: str) -> str:
+    if settings.preview_season_channel_id and settings.production_guild_id:
+        channel_ref = f"https://discord.com/channels/{settings.production_guild_id}/{settings.preview_season_channel_id}"
+    else:
+        channel_ref = "preview-season"
+    return (
+        f"🧮 **{posts}** {channel_ref} posts accounted for! "
+        f"[**Check the Awards**]({url}) {tap}"
+    )
 
 
 @dataclass(frozen=True)
@@ -282,7 +285,7 @@ class PreviewSeasonAwards(commands.Cog):
             return
 
         ceremony = await interaction.channel.send(view=build_awards_view(data, reveal=0))
-        counted = MSG_COUNTED.format(posts=len(posts), url=ceremony.jump_url, tap=emojis.get("manat"))
+        counted = msg_counted(len(posts), ceremony.jump_url, emojis.get("manat"))
         await interaction.edit_original_response(view=build_notice_view(counted))
         audit.event(
             "preview_season_awards_posted",

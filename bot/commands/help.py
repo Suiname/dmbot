@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 HELP_TITLE = "❔ Commands"
 
 # (section_label, [(command, description), ...])
-HELP_SECTIONS: list[tuple[str, list[tuple[str, str]]]] = [
+_LEADERBOARD_SECTIONS: list[tuple[str, list[tuple[str, str]]]] = [
     ("🏆 Leaderboard", [
         ("/join", desc.JOIN),
         ("/leaderboard", desc.LEADERBOARD),
@@ -32,12 +32,24 @@ HELP_SECTIONS: list[tuple[str, list[tuple[str, str]]]] = [
         ("/link-17lands", desc.LINK_17LANDS),
         ("/link-arena", desc.LINK_ARENA),
     ]),
+]
+
+_POD_ONLY_SECTIONS: list[tuple[str, list[tuple[str, str]]]] = [
     ("🚀 Pod Drafts", [
         ("/pod-guide", desc.POD_GUIDE),
         ("/pod-schedule", desc.POD_SCHEDULE),
         ("/report-results", desc.REPORT_RESULTS),
+        ("/link-arena", desc.LINK_ARENA),
+        ("/roles", desc.ROLES),
+        ("/help", desc.HELP),
     ]),
 ]
+
+HELP_SECTIONS: list[tuple[str, list[tuple[str, str]]]] = (
+    _LEADERBOARD_SECTIONS + _POD_ONLY_SECTIONS[-1:]
+    if settings.leaderboard_enabled
+    else _POD_ONLY_SECTIONS
+)
 
 POD_HELP_SECTIONS: list[tuple[str, list[tuple[str, str]]]] = [
     ("🚀 Pod Drafts", [
@@ -59,7 +71,7 @@ POD_HELP_SECTIONS: list[tuple[str, list[tuple[str, str]]]] = [
         ("/help", desc.HELP),
     ]),
     ("🔗 Integration", [
-        ("/link-17lands", desc.LINK_17LANDS),
+        *([ ("/link-17lands", desc.LINK_17LANDS) ] if settings.leaderboard_enabled else []),
         ("/link-arena", desc.LINK_ARENA),
     ]),
     ("⚙️ Admin", [
@@ -77,7 +89,7 @@ HELP_EXAMPLES: dict[str, list[list[str]]] = {
         ["/leaderboard", "color: Boros", "set: FIN"],
         ["/leaderboard", "set: ALL"],
     ],
-}
+} if settings.leaderboard_enabled else {}
 
 
 class HelpView(discord.ui.View):

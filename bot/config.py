@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from pydantic import SecretStr
+from pydantic import SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DRAFTMANCER_HOST = "draftmancer.com"
-
-PRODUCTION_GUILD_ID = 775371722065051658
 
 
 class Settings(BaseSettings):
@@ -23,10 +21,20 @@ class Settings(BaseSettings):
     discord_bot_token: SecretStr | None = None
     discord_guild_id: int | None = None
     discord_admin_role_id: int | None = None
+    production_guild_id: int | None = None
+
+    @model_validator(mode="after")
+    def _default_production_guild_id(self) -> "Settings":
+        if self.production_guild_id is None and self.discord_guild_id is not None:
+            self.production_guild_id = self.discord_guild_id
+        return self
     discord_botlog_channel_id: int | None = None
     feedback_channel_id: int = 1504825374188507156
-    public_site_url: str = "https://limitedlevelups.com"
-    auto_refresh_enabled: bool = True
+    preview_season_channel_id: int | None = None
+    community_name: str = "this server"
+    public_site_url: str = ""
+    auto_refresh_enabled: bool = False
+    leaderboard_enabled: bool = False
 
     @property
     def leaderboard_url(self) -> str:
@@ -75,17 +83,18 @@ class Settings(BaseSettings):
     draftmancer_web_url: str = f"https://{DRAFTMANCER_HOST}"
 
     youtube_api_key: SecretStr | None = None
-    youtube_channel_handle: str = "limitedlevel-ups"
-    libsyn_feed_url: str = "https://feeds.libsyn.com/limitedlevelups/rss"
-    media_sync_enabled: bool = True
-    profile_sync_enabled: bool = True
+    youtube_channel_handle: str = ""
+    libsyn_feed_url: str = ""
+    podcast_title_prefix: str | None = None
+    media_sync_enabled: bool = False
+    profile_sync_enabled: bool = False
 
 
     @property
     def is_production(self) -> bool:
         """Whether this process is the community bot. The test bot runs the same code against its own guild,
         so behavior that belongs to one of them keys off the guild it is actually in."""
-        return self.discord_guild_id == PRODUCTION_GUILD_ID
+        return self.discord_guild_id == self.production_guild_id
 
 
 def _int_csv(raw: str) -> tuple[int, ...]:

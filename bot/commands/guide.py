@@ -38,7 +38,7 @@ log = logging.getLogger(__name__)
 
 GUIDE_COLOR = discord.Color.green()
 HISTORY_SCAN_LIMIT = 20
-WEBHOOK_NAME = "LLU Server Guide"
+WEBHOOK_NAME = f"{settings.community_name} Server Guide"
 WEBHOOK_USERNAME_LIMIT = 80
 WEBHOOK_FALLBACK_NOTE = " (posted as the bot, grant Manage Webhooks to post as the server owner)"
 
@@ -100,6 +100,8 @@ async def sync_set_tracking_todo(guild: discord.Guild, http) -> tuple[str, str]:
         welcome = await http.request(route)
     except discord.HTTPException:
         return SYNC_FAILED, "⚠️ Latest channel: could not read the Server Guide"
+    if not isinstance(welcome, dict):
+        return SYNC_NO_CHANNEL, "⚠️ Latest channel: Server Guide not configured on this server"
     actions = welcome.get("new_member_actions") or []
     index = set_tracking_todo_index(actions, guild.channels)
     if index is None:

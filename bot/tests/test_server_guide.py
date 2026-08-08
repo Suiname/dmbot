@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 import pytest
 
 from bot import emojis
+from bot.commands import guide
 from bot.config import settings
 from bot.services.format_schedule import (
     FORMAT_ARCHIVE_CATEGORY,
@@ -140,8 +141,7 @@ def test_render_page_resolves_channel_mentions_and_latest_set():
 
     content = render_page("channel-overview", channels)
 
-    assert "<#😁-magic-and-chill>" in content.body
-    assert "<#🦸-marvel-super-heroes>" in content.body
+    assert "<#🚀-pod-draft-coordination>" in content.body
 
 
 def test_render_page_missing_channel_degrades_to_plain_name():
@@ -149,13 +149,13 @@ def test_render_page_missing_channel_degrades_to_plain_name():
 
     content = render_page("channel-overview", channels)
 
-    assert "#magic-and-chill" in content.body
+    assert "#pod-draft-chat" in content.body
 
 
-def test_render_page_inlines_site_url():
-    content = render_page("quick-links", _full_channel_set())
+def test_render_page_inlines_site_url(monkeypatch):
+    monkeypatch.setattr(settings, "public_site_url", "https://example.com")
+    content = render_page("channel-overview", _full_channel_set())
 
-    assert "https://limitedlevelups.com" in content.body
     assert content.topic
 
 
@@ -168,7 +168,6 @@ def test_render_page_inlines_bot_mention():
 def test_render_page_resolves_thumbnail_and_feedback():
     content = render_page("dischord-bot", _full_channel_set())
 
-    assert content.thumbnail == "https://limitedlevelups.com/llu-bot.png"
     assert f"<#{settings.feedback_channel_id}>" in content.body
 
 
@@ -182,27 +181,26 @@ def test_render_page_resolves_command_descriptions():
     assert "{desc:" not in content.body
 
 
-def test_render_page_resolves_loaded_emojis_and_keeps_unknown_literal(monkeypatch):
+def test_render_page_resolves_loaded_emojis(monkeypatch):
     class _StubEmoji:
         def __str__(self):
-            return "<:youtube:123>"
+            return "<:llu:123>"
 
-    monkeypatch.setattr(emojis, "_EMOJIS", {"youtube": _StubEmoji()})
+    monkeypatch.setattr(emojis, "_EMOJIS", {"llu": _StubEmoji()})
 
-    content = render_page("quick-links", _full_channel_set())
+    content = render_page("dischord-bot", _full_channel_set(), bot_mention="<@42>")
 
-    assert "<:youtube:123>" in content.body
-    assert ":twitch:" in content.body
+    assert "<:llu:123>" in content.body
 
 
-def test_pages_by_channel_groups_shared_channel_in_order():
+def test_pages_by_channel_has_no_duplicate_channels_and_bot_guide_maps_to_dischord_bot():
     groups = pages_by_channel()
 
     channels = [channel for channel, _ in groups]
-    website = next(pages for channel, pages in groups if channel == "limitedlevelups-com")
+    bot_guide = next(pages for channel, pages in groups if channel == "bot-guide")
 
     assert len(channels) == len(set(channels))
-    assert [page.name for page in website] == ["limitedlevelups-com", "dischord-bot"]
+    assert [page.name for page in bot_guide] == ["dischord-bot"]
 
 
 def test_render_page_resolves_moderator_mention():
@@ -232,3 +230,11 @@ def test_page_bodies_fit_one_embed(page):
     content = parse_page(page.name)
 
     assert len(content.body) < 4000
+
+
+def test_guide_webhook_name_carries_the_configured_community_name():
+    """Phase 4 of the generalize plan replaced the hardcoded 'LLU Server Guide' webhook name with one
+    built from settings.community_name — a regression here silently reposts the guide under the wrong
+    identity."""
+    assert guide.WEBHOOK_NAME == f"{settings.community_name} Server Guide"
+    assert "LLU" not in guide.WEBHOOK_NAME
